@@ -9,40 +9,51 @@ import {
 import { createSignerFromKeypair, signerIdentity, publicKey } from "@metaplex-foundation/umi";
 import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
-// Define our Mint address
-const mint = publicKey("<mint address>")
+
+// Mint address
+const mint =  publicKey("FB49j23MM9rUSgQ93MfASR4rPGEAf99uBN6uhDiWjxzG");
 
 // Create a UMI connection
 const umi = createUmi('https://api.devnet.solana.com');
 const keypair = umi.eddsa.createKeypairFromSecretKey(new Uint8Array(wallet));
+
 const signer = createSignerFromKeypair(umi, keypair);
-umi.use(signerIdentity(createSignerFromKeypair(umi, keypair)));
+umi.use(signerIdentity(signer));
 
 (async () => {
     try {
         // Start here
-        // let accounts: CreateMetadataAccountV3InstructionAccounts = {
-        //     ???
-        // }
+        const accounts: CreateMetadataAccountV3InstructionAccounts = {
+         mint,
+         mintAuthority: signer
+    }
 
-        // let data: DataV2Args = {
-        //     ???
-        // }
+         const data: DataV2Args = {
+            name: "Turbin3 Token",
+            symbol: "TBT",
+            uri: "https://www.turbin3.com",
+            sellerFeeBasisPoints: 1000,
+            creators: null,
+            collection: null,
+            uses: null
+         }
 
-        // let args: CreateMetadataAccountV3InstructionArgs = {
-        //     ???
-        // }
+        const args: CreateMetadataAccountV3InstructionArgs = {
+            data,
+            isMutable: true,
+            collectionDetails: null,
+        }
 
-        // let tx = createMetadataAccountV3(
-        //     umi,
-        //     {
-        //         ...accounts,
-        //         ...args
-        //     }
-        // )
+        const tx = createMetadataAccountV3(
+            umi,
+            {
+                ...accounts,
+                ...args
+            }
+        )
 
-        // let result = await tx.sendAndConfirm(umi);
-        // console.log(bs58.encode(result.signature));
+        const result = await tx.sendAndConfirm(umi);
+        console.log(`Metadata created: ${bs58.encode(result.signature)}`);
     } catch(e) {
         console.error(`Oops, something went wrong: ${e}`)
     }
